@@ -1,0 +1,13 @@
+const path = require('path');
+
+module.exports = {
+  mode: 'development',
+  entry: {
+    path: path.resolve(__dirname, 'js'),
+    filename: 'app.js',
+  },
+  output: {
+    path: path.resolve(__dirname, 'build'),
+    filename: 'bundle.js',
+  },
+};

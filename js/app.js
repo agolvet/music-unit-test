@@ -1,5 +1,7 @@
+import "./components/MidiKeyboard.js"
+
 async function setup() {
-    const patchExportURL = "export/patch.export.json";
+    const patchExportURL = "export/synthFM.json";
 
     // Create AudioContext
     const WAContext = window.AudioContext || window.webkitAudioContext;
@@ -75,19 +77,21 @@ async function setup() {
     document.getElementById("patcher-title").innerText = (patcher.desc.meta.filename || "Unnamed Patcher") + " (v" + patcher.desc.meta.rnboversion + ")";
 
     // (Optional) Automatically create sliders for the device parameters
-    makeSliders(device);
+    // makeSliders(device);
 
     // (Optional) Create a form to send messages to RNBO inputs
-    makeInportForm(device);
+    // makeInportForm(device);
 
     // (Optional) Attach listeners to outports so you can log messages from the RNBO patcher
-    attachOutports(device);
+    // attachOutports(device);
 
     // (Optional) Load presets, if any
-    loadPresets(device, patcher);
+    // loadPresets(device, patcher);
 
     // (Optional) Connect MIDI inputs
-    makeMIDIKeyboard(device);
+    // makeMIDIKeyboard(device);
+
+    initComponents(device);
 
     document.body.onclick = () => {
         context.resume();
@@ -336,4 +340,11 @@ function makeMIDIKeyboard(device) {
     });
 }
 
+// add device to custom lit elements for callback function
+function initComponents(device) {
+    const $keyboard = document.getElementById("midi-keyboard");
+    $keyboard.device = device;
+}
+
 setup();
+

@@ -1,6 +1,8 @@
 html, body {
     margin: 0;
     padding: 0;
+    color: white;
+    background-color: black;
 }
 #rnbo-root {
     height: 100vh;

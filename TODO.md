@@ -2,9 +2,16 @@
   - [ ] colors
   - [ ] multiphonic
   - [ ] touch controls
-  - [ ] change octave and range
+  - [X] change octave and range
+  - [ ] fixed velocity
+  - [ ] fix velocity black keys
 
-- [ ] sliders or rotary dial
+- [ ] number
+  - [ ] homogenize dimensions (height width)
+
+- [ ] sliders
+  - [ ] homogenize dimensions (height width)
+
 - [ ] presets
 
 - [ ] design app

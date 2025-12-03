@@ -1,4 +1,7 @@
 import "./components/MidiKeyboard.js"
+import "./components/NumberBox.js"
+import "./components/Slider.js"
+
 
 async function setup() {
     const patchExportURL = "export/synthFM.json";

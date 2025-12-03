@@ -1,8 +1,7 @@
 import { LitElement, html, css } from 'lit';
+import "./NumberBox.js"
 
 const whiteNotes = [0, 2, 4, 5, 7, 9, 11];
-const nOctave = 2;
-const firstOctave = 3; //keyboard start from C3
 const midiPort = 0;
 
 class MidiKeyboard extends LitElement {
@@ -12,13 +11,20 @@ class MidiKeyboard extends LitElement {
     this._width = 600;
     this._height = 150;
     this.device = null;
+
+    this.nOctave = 2;
+    this.firstOctave = 3;
+  }
+
+  static properties = {
+    nOctave: {
+      type: Number,
+    },
   }
 
   static styles = css`
     :host {
       display: inline-block;
-      width: 600px;
-      height: 200px;
       position: relative;
     }
 
@@ -29,21 +35,35 @@ class MidiKeyboard extends LitElement {
       border: solid 1px black;
     }
 
-    .white {
-      background-color: white;
+    .key:active {
+      background-color: #ED6447;
     }
 
-    .white:active {
-      background-color: darkgrey;
+    .white {
+      background-color: white;
     }
 
     .black {
       background-color: black;
     }
 
-    .black:active {
-      background-color: grey;
+    #keyboard {
+      width: 600px;
+      height: 150px;
+      position: relative;
     }
+
+    .params {
+      margin: 2px 0px;
+      display: flex;
+      align-items: center;
+    }
+
+    .params > number-box 
+    {
+      margin-right: 5px;
+    }
+
   `;
 
   render() {
@@ -51,12 +71,12 @@ class MidiKeyboard extends LitElement {
     const blackKeys = [];
 
     const heightBlackKey = 0.66*this._height; 
-    const widthWhiteKey = this._width/(nOctave*7)
+    const widthWhiteKey = this._width/(this.nOctave*7)
     const widthBlackKey = 0.66 * widthWhiteKey; 
     let keyPosition = 0; 
     
     // populate arrays with white and black key html elements
-    for (let i = 0; i < nOctave*12; i++) {
+    for (let i = 0; i < this.nOctave*12; i++) {
       const isWhite = whiteNotes.includes(i%12);
       if (isWhite) {
         whiteKeys.push(html`
@@ -98,8 +118,32 @@ class MidiKeyboard extends LitElement {
 
     // return for rendering
     return html`
-      ${whiteKeys}
-      ${blackKeys}
+      <div id="keyboard">
+        ${whiteKeys}
+        ${blackKeys}
+      </div>
+      <div class="params">
+        <number-box
+          value="${this.nOctave}"
+          min="0"
+          max="8"
+          integer="true"
+          @change="${e => this.nOctave = e.detail.value}"
+        ></number-box>
+        <div>number of octaves</div>
+      </div>
+      <div class="params">
+        <number-box
+          value="${this.firstOctave}"
+          min="0"
+          max="8"
+          integer="true"
+          @change="${e => this.firstOctave = e.detail.value}"
+        ></number-box>
+        <div>first octave</div>
+      </div>
+      
+      
     `
   }
 
@@ -107,9 +151,10 @@ class MidiKeyboard extends LitElement {
   // this sends a midi event to rnbo
   playNote(e) {
     // compute midi note number and velocity based on height of the click like in max/msp
-    const midiNote = 24 + (firstOctave - 1)*12 + e.target.value; 
+    const midiNote = 24 + (this.firstOctave - 1)*12 + e.target.value; 
     const velocity = 127 - 127/(this._height + 2) * e.layerY;
 
+    console.log(midiNote);
     const noteOnMessage = [
       144, // Code for a note on: 10010000 & midi channel (0-15)
       midiNote, // MIDI Note
@@ -122,7 +167,7 @@ class MidiKeyboard extends LitElement {
   }
 
   releaseNote(e) {
-    const midiNote = 24 + (firstOctave - 1) * 12 + e.target.value;
+    const midiNote = 24 + (this.firstOctave - 1) * 12 + e.target.value;
 
     let noteOffMessage = [
       128, // Code for a note off: 10000000 & midi channel (0-15)

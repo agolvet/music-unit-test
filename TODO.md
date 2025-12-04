@@ -2,11 +2,12 @@
   - [ ] colors
   - [ ] multiphonic
   - [ ] touch controls
-  - [X] change octave and range
+  - [x] change octave and range
   - [ ] fixed velocity
   - [ ] fix velocity black keys
 
 - [ ] number
+  - [x] bug with floating point
   - [ ] homogenize dimensions (height width)
 
 - [ ] sliders

@@ -5,7 +5,7 @@ class NumberBox extends LitElement {
     super();
 
     this._value = 0;
-    this._typedValue = this._value;
+    this._typedValue = '0';
     this._min = -Infinity;
     this._max = +Infinity;
     this.integer = false;
@@ -35,7 +35,7 @@ class NumberBox extends LitElement {
 
   set value(value) {
     this._value = value;
-    this._typedValue = value;
+    this._typedValue = this._numToString(value);
     this.requestUpdate();
   }
 
@@ -46,7 +46,7 @@ class NumberBox extends LitElement {
   set min(value) {
     this._min = value;
     if (this._value < this._min) {
-      this._updateValue(this._min);
+      this._updateValueFromNumber(this._min);
     }
   }
 
@@ -57,7 +57,7 @@ class NumberBox extends LitElement {
   set max(value) {
     this._max = value;
     if (this._value > this._max) {
-      this._updateValue(this._max);
+      this._updateValueFromNumber(this._max);
     }
   }
 
@@ -121,9 +121,28 @@ class NumberBox extends LitElement {
     `
   }
 
-  _updateValue(value) {
-    this._value = Math.max(this._min, Math.min(this._max, value))
-    this._typedValue = this._value;
+  _numToString(num) {
+    return this.integer ? num.toString() : num.toFixed(3);
+  }
+
+  _updateValueFromNumber(value) {
+    this._value = Math.max(this._min, Math.min(this._max, value));
+    this._typedValue = this._numToString(this._value);
+
+    this.requestUpdate();
+
+    const event = new CustomEvent('change', {
+      bubbles: true,
+      composed: true,
+      detail: { value: this._value },
+    });
+
+    this.dispatchEvent(event);
+  }
+
+  _updateValueFromString(value) {
+    this._value = parseFloat(value);
+    this._value = Math.max(this._min, Math.min(this._max, value));
 
     this.requestUpdate();
     
@@ -143,34 +162,58 @@ class NumberBox extends LitElement {
 
   _onBlur(e) {
     window.removeEventListener("keydown", this._onKeyDown);
-    this._mult = 0.1;
-    this._inDecimal = false;
-    this._updateValue(this._typedValue);
+    // this._mult = 0.1;
+    // this._inDecimal = false;
+    this._updateValueFromString(this._typedValue);
   }
 
   _onKeyDown(e) {
-    if (this._typedValue.toString().length < 7) {
+    if (this._typedValue.length < 7) {
       const isNumber = /^[0-9]$/i.test(e.key);
       if (isNumber) {
         if (this._newValue) {
-          this._typedValue = 0;
+          this._typedValue = '';
           this._newValue = false;
         }
-        const n = parseInt(e.key);
-        if (this._inDecimal) {
-          this._typedValue = this._typedValue + n * this._mult;
-          this._mult /= 10;
+        this._typedValue = this._typedValue + e.key;
+      } else if ((e.key === "." || e.key === ",") && !(this._typedValue.includes('.')) && !this.integer) {
+        this._typedValue = this._typedValue + ".";
+      } else if (e.key === "Backspace") {
+        if (this._typedValue.length === 1) {
+          this._typedValue = '0'
         } else {
-          this._typedValue = this._typedValue * 10 + n;
+          this._typedValue = this._typedValue.slice(0, -1);
         }
-      }
-      else if ((e.key === "." || e.key === ",") && !this._inDecimal && !this.integer) {
-        this._inDecimal = true;
       }
     }
 
     this.requestUpdate();
   }
+
+  // _onKeyDown(e) {
+  //   if (this._typedValue.toString().length < 7) {
+  //     const isNumber = /^[0-9]$/i.test(e.key);
+  //     if (isNumber) {
+  //       if (this._newValue) {
+  //         this._typedValue = 0;
+  //         this._newValue = false;
+  //       }
+  //       const n = parseInt(e.key);
+  //       if (this._inDecimal) {
+  //         this._typedValue = this._typedValue + n * this._mult;
+  //         console.log(this._typedValue, n * this._mult);
+  //         this._mult /= 10;
+  //       } else {
+  //         this._typedValue = this._typedValue * 10 + n;
+  //       }
+  //     }
+  //     else if ((e.key === "." || e.key === ",") && !this._inDecimal && !this.integer) {
+  //       this._inDecimal = true;
+  //     }
+  //   }
+
+  //   this.requestUpdate();
+  // }
 }
 
 customElements.define('number-box', NumberBox);

@@ -1,6 +1,7 @@
-import "./components/MidiKeyboard.js"
-import "./components/NumberBox.js"
-import "./components/Slider.js"
+// import "./components/MidiKeyboard.js"
+// import "./components/NumberBox.js"
+// import "./components/Slider.js"
+import "./components/Layout.js"
 
 
 async function setup() {
@@ -94,7 +95,7 @@ async function setup() {
     // (Optional) Connect MIDI inputs
     // makeMIDIKeyboard(device);
 
-    initComponents(device);
+    // initComponents(device);
 
     document.body.onclick = () => {
         context.resume();
@@ -344,10 +345,10 @@ function makeMIDIKeyboard(device) {
 }
 
 // add device to custom lit elements for callback function
-function initComponents(device) {
-    const $keyboard = document.getElementById("midi-keyboard");
-    $keyboard.device = device;
-}
+// function initComponents(device) {
+//     const $keyboard = document.getElementById("midi-keyboard");
+//     $keyboard.device = device;
+// }
 
 setup();
 

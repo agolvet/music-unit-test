@@ -80,6 +80,10 @@ async function setup() {
     // (Optional) Extract the name and rnbo version of the patcher from the description
     document.getElementById("patcher-title").innerText = (patcher.desc.meta.filename || "Unnamed Patcher") + " (v" + patcher.desc.meta.rnboversion + ")";
 
+    // communicate rnbo device to the app custom layout
+    const $appLayout = document.getElementById("app-layout");
+    $appLayout.device = device;
+
     // (Optional) Automatically create sliders for the device parameters
     // makeSliders(device);
 
@@ -343,12 +347,6 @@ function makeMIDIKeyboard(device) {
         mdiv.appendChild(key);
     });
 }
-
-// add device to custom lit elements for callback function
-// function initComponents(device) {
-//     const $keyboard = document.getElementById("midi-keyboard");
-//     $keyboard.device = device;
-// }
 
 setup();
 

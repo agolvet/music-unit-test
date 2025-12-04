@@ -14,5 +14,7 @@
   - [ ] homogenize dimensions (height width)
 
 - [ ] presets
+  - [ ] save presets and save in local storage
 
-- [ ] design app
+- [ ] Layout
+  - [x] index slider is bugged

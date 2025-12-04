@@ -2,7 +2,7 @@ import { LitElement, html, css } from 'lit';
 import "./NumberBox.js"
 
 const whiteNotes = [0, 2, 4, 5, 7, 9, 11];
-const midiPort = 0;
+
 
 class MidiKeyboard extends LitElement {
   constructor() {
@@ -14,6 +14,9 @@ class MidiKeyboard extends LitElement {
 
     this.nOctave = 2;
     this.firstOctave = 3;
+
+    this.playNote = this.playNote.bind(this);
+    this.releaseNote = this.releaseNote.bind(this);
   }
 
   static properties = {
@@ -88,8 +91,9 @@ class MidiKeyboard extends LitElement {
               height: ${this._height}px;
             "
             .value=${i}
-            @pointerdown=${this.playNote}
-            @pointerup=${this.releaseNote}
+            @mousedown="${this.playNote}"
+            @mouseup="${this.releaseNote}"
+            @mouseout="${this.releaseNote}"
           ></div>
         `)
       } else {
@@ -103,8 +107,9 @@ class MidiKeyboard extends LitElement {
               height: ${heightBlackKey}px;
             "
             .value=${i}
-            @pointerdown=${this.playNote}
-            @pointerup=${this.releaseNote}
+            @mousedown="${this.playNote}"
+            @mouseup="${this.releaseNote}"
+            @mouseout="${this.releaseNote}"
           ></div>
         `)
       }
@@ -147,37 +152,61 @@ class MidiKeyboard extends LitElement {
     `
   }
 
-  // callback function for playing a note when clicking on a note
-  // this sends a midi event to rnbo
   playNote(e) {
     // compute midi note number and velocity based on height of the click like in max/msp
     const midiNote = 24 + (this.firstOctave - 1)*12 + e.target.value; 
     const velocity = 127 - 127/(this._height + 2) * e.layerY;
 
-    console.log(midiNote);
-    const noteOnMessage = [
-      144, // Code for a note on: 10010000 & midi channel (0-15)
-      midiNote, // MIDI Note
-      velocity // MIDI Velocity
-    ];
+    const event = new CustomEvent('input', {
+      bubbles: true,
+      composed: true,
+      detail: { value: {
+        type: "noteOn",
+        midiNote,
+        velocity
+      }},
+    });
 
-    const noteOnEvent = new RNBO.MIDIEvent(this.device.context.currentTime * 1000, midiPort, noteOnMessage);
+    this.dispatchEvent(event);
+
+    // const noteOnMessage = [
+    //   144, // Code for a note on: 10010000 & midi channel (0-15)
+    //   midiNote, // MIDI Note
+    //   velocity // MIDI Velocity
+    // ];
+
+    // const noteOnEvent = new RNBO.MIDIEvent(this.device.context.currentTime * 1000, midiPort, noteOnMessage);
     
-    this.device.scheduleEvent(noteOnEvent);
+    // this.device.scheduleEvent(noteOnEvent);
   }
 
   releaseNote(e) {
     const midiNote = 24 + (this.firstOctave - 1) * 12 + e.target.value;
+    const velocity = 0;
 
-    let noteOffMessage = [
-      128, // Code for a note off: 10000000 & midi channel (0-15)
-      midiNote, // MIDI Note
-      0 // MIDI Velocity
-    ];
+    const event = new CustomEvent('input', {
+      bubbles: true,
+      composed: true,
+      detail: {
+        value: {
+          type: "noteOff",
+          midiNote,
+          velocity
+        }
+      },
+    });
 
-    const noteOffEvent = new RNBO.MIDIEvent(this.device.context.currentTime * 1000, midiPort, noteOffMessage);
+    this.dispatchEvent(event);
 
-    this.device.scheduleEvent(noteOffEvent);
+    // let noteOffMessage = [
+    //   128, // Code for a note off: 10000000 & midi channel (0-15)
+    //   midiNote, // MIDI Note
+    //   0 // MIDI Velocity
+    // ];
+
+    // const noteOffEvent = new RNBO.MIDIEvent(this.device.context.currentTime * 1000, midiPort, noteOffMessage);
+
+    // this.device.scheduleEvent(noteOffEvent);
   }
 }
 

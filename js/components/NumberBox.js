@@ -96,6 +96,7 @@ class NumberBox extends LitElement {
     .value {
       font-size: 14px;
       padding: 0 10px;
+      user-select: none;
     }
   `;
 
@@ -122,7 +123,7 @@ class NumberBox extends LitElement {
   }
 
   _numToString(num) {
-    return this.integer ? num.toString() : num.toFixed(3);
+    return this.integer ? num.toString() : num.toFixed(2);
   }
 
   _updateValueFromNumber(value) {

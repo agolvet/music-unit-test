@@ -161,7 +161,7 @@ class Slider extends LitElement {
     const xClick = e.layerX;
     this._windownXClickDown = e.clientX;
    
-    this.value = (this._max - this._min)*xClick/this.width;
+    this.value = (this._max - this._min)*xClick/this.width + this._min;
     this._widthOnClick = this._widthFromValue(this._value);
 
     this._triggerInput();

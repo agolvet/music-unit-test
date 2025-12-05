@@ -1,8 +1,14 @@
 import { LitElement, html, css } from 'lit';
 import "./NumberBox.js"
+import "./Toggle.js"
 
 const whiteNotes = [0, 2, 4, 5, 7, 9, 11];
 
+/*
+  A minimalist monophonic MIDI keyboard.
+  Number boxes can be used to change number of octave displayed, first octave 
+  displayed and to (un)toggle fixed velocity.
+*/
 
 class MidiKeyboard extends LitElement {
   constructor() {
@@ -14,7 +20,13 @@ class MidiKeyboard extends LitElement {
 
     this.nOctave = 2;
     this.firstOctave = 3;
+    this.fixedVelocity = false;
+    this.velocity = 100;
 
+    // height of displayed black key compared to white key
+    this.blackToWhiteKeyRatio = 0.66;
+
+    // need these so that "this" refers to this element in these callback function
     this.playNote = this.playNote.bind(this);
     this.releaseNote = this.releaseNote.bind(this);
   }
@@ -29,6 +41,10 @@ class MidiKeyboard extends LitElement {
     :host {
       display: inline-block;
       position: relative;
+    }
+
+    .text {
+      font-weight: bold;
     }
 
     .key {
@@ -57,14 +73,14 @@ class MidiKeyboard extends LitElement {
     }
 
     .params {
-      margin: 2px 0px;
+      margin: 5px 0px;
       display: flex;
       align-items: center;
+      gap: 10px
     }
 
-    .params > number-box 
-    {
-      margin-right: 5px;
+    .text {
+      width: 150px;
     }
 
   `;
@@ -73,9 +89,9 @@ class MidiKeyboard extends LitElement {
     const whiteKeys = [];
     const blackKeys = [];
 
-    const heightBlackKey = 0.66*this._height; 
+    const heightBlackKey = this.blackToWhiteKeyRatio * this._height; 
     const widthWhiteKey = this._width/(this.nOctave*7)
-    const widthBlackKey = 0.66 * widthWhiteKey; 
+    const widthBlackKey = this.blackToWhiteKeyRatio * widthWhiteKey; 
     let keyPosition = 0; 
     
     // populate arrays with white and black key html elements
@@ -128,6 +144,7 @@ class MidiKeyboard extends LitElement {
         ${blackKeys}
       </div>
       <div class="params">
+        <div class="text">number of octaves</div>
         <number-box
           value="${this.nOctave}"
           min="0"
@@ -135,9 +152,9 @@ class MidiKeyboard extends LitElement {
           integer="true"
           @change="${e => this.nOctave = e.detail.value}"
         ></number-box>
-        <div>number of octaves</div>
       </div>
-      <div class="params">
+      <div class="params">  
+        <div class="text">first octave</div>
         <number-box
           value="${this.firstOctave}"
           min="0"
@@ -145,17 +162,38 @@ class MidiKeyboard extends LitElement {
           integer="true"
           @change="${e => this.firstOctave = e.detail.value}"
         ></number-box>
-        <div>first octave</div>
       </div>
-      
-      
+      <div class="params">
+        <div class="text">fixed velocity</div>
+        <toggle-box
+          .active="${this.fixedVelocity}"
+          @change="${e => this.fixedVelocity = e.detail.value}"
+        ></toggle-box>
+        <number-box
+          value="${this.velocity}"
+          min="0"
+          max="8"
+          integer="true"
+          @change="${e => this.velocity = e.detail.value}"
+        ></number-box>
+      </div>
     `
   }
 
   playNote(e) {
     // compute midi note number and velocity based on height of the click like in max/msp
     const midiNote = 24 + (this.firstOctave - 1)*12 + e.target.value; 
-    const velocity = 127 - 127/(this._height + 2) * e.layerY;
+    const isWhiteKey = whiteNotes.includes(e.target.value % 12);
+    let velocity;
+    if (this.fixedVelocity) {
+      velocity = this.velocity;
+    } else {
+      if (isWhiteKey) {
+        velocity = 127 - 127 / (this._height + 2) * e.layerY;
+      } else {
+        velocity = 127 - 127 / (this.blackToWhiteKeyRatio*this._height + 2) * e.layerY;
+      }
+    }
 
     const event = new CustomEvent('input', {
       bubbles: true,
@@ -168,16 +206,6 @@ class MidiKeyboard extends LitElement {
     });
 
     this.dispatchEvent(event);
-
-    // const noteOnMessage = [
-    //   144, // Code for a note on: 10010000 & midi channel (0-15)
-    //   midiNote, // MIDI Note
-    //   velocity // MIDI Velocity
-    // ];
-
-    // const noteOnEvent = new RNBO.MIDIEvent(this.device.context.currentTime * 1000, midiPort, noteOnMessage);
-    
-    // this.device.scheduleEvent(noteOnEvent);
   }
 
   releaseNote(e) {
@@ -197,16 +225,6 @@ class MidiKeyboard extends LitElement {
     });
 
     this.dispatchEvent(event);
-
-    // let noteOffMessage = [
-    //   128, // Code for a note off: 10000000 & midi channel (0-15)
-    //   midiNote, // MIDI Note
-    //   0 // MIDI Velocity
-    // ];
-
-    // const noteOffEvent = new RNBO.MIDIEvent(this.device.context.currentTime * 1000, midiPort, noteOffMessage);
-
-    // this.device.scheduleEvent(noteOffEvent);
   }
 }
 

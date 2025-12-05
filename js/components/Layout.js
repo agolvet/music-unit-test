@@ -6,6 +6,16 @@ import "./Presets.js"
 
 const midiPort = 0;
 
+/*
+  General layout of the app.
+
+  As for all lit elements, the HTML structure in written in the render function 
+  and the CSS styling in the styles variable.
+
+  We need to pass the RNBO device to this component in the app.js (cf. line 84)
+  to automatically instantiate parameters sliders and define keyboard callbacks
+*/ 
+
 class Layout extends LitElement {
   constructor() {
     super();
@@ -23,18 +33,39 @@ class Layout extends LitElement {
   set device(d) {
     this._device = d;
 
+    // update rendering in case parameters are changed through the device (cf. presets)
     d.parameterChangeEvent.subscribe(param => {
       const $paramSlider = this.renderRoot.getElementById(`rnbo-param-${param.id}`);
       $paramSlider.value = param.value; 
-    });
-
-
+    }); 
   }
 
   get device() {
     return this._device;
   }
 
+  static styles = css`
+    .text {
+      font-weight: bold;
+    }
+
+    midi-keyboard {
+      margin: 20px 0;
+    }
+
+    #audio-params {
+      width: 600px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr;
+    }
+
+    #audio-params > p {
+      font-weight: bold;
+    }
+
+  `
+  // rendering parameter sliders automatically from rnbo export.
   renderParams() {
     if (this._device) {
       return this._device.parameters.map(param => {
@@ -54,27 +85,19 @@ class Layout extends LitElement {
 
   render() {
     return html`
-      <p>hello</p>
+      <div class="text">presets</div>
       <my-presets
+        .device="${this.device}"
         @input="${e => this.loadPreset(e.detail.value)}"
       ></my-presets>
       <midi-keyboard 
         id="midi-keyboard"
         @input="${e => this.onMidiEvent(e.detail.value)}"
       ></midi-keyboard>
-      <my-slider 
-          min="0"
-          max="1"
-          value="0.2"
-      ></my-slider>
-      ${this.renderParams()}
+      <div id="audio-params">
+        ${this.renderParams()}
+      </div>
     `
-  }
-
-  paramChange(val, param) {
-    if (this._device) {
-    }
-
   }
 
   onMidiEvent(e) {
@@ -110,20 +133,6 @@ class Layout extends LitElement {
 
     this._device.scheduleEvent(noteOffEvent);
   }
-
-  savePreset(preset) {
-    
-  }
-
-  loadPreset(preset) {
-    Object.keys(preset).forEach(paramId => {
-      const rnboParam = this.device.parameters.find(p => p.id === paramId);
-      rnboParam.value = preset[paramId];
-      const $paramSlider = this.renderRoot.getElementById(`rnbo-param-${paramId}`);
-      $paramSlider.value = preset[paramId]; 
-    });
-  }
-
 }
 
 customElements.define('my-layout', Layout);

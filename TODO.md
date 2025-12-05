@@ -1,20 +1,27 @@
+- [ ] clean code & comments
+- [ ] tests
+
 - [ ] Keyboard
-  - [ ] colors
-  - [ ] multiphonic
-  - [ ] touch controls
+  - [x] colors
   - [x] change octave and range
-  - [ ] fixed velocity
-  - [ ] fix velocity black keys
+  - [x] fixed velocity
+  - [x] fix velocity black keys
 
 - [ ] number
   - [x] bug with floating point
-  - [ ] homogenize dimensions (height width)
+  - [x] pointer
+  - [x] homogenize dimensions (height width)
 
 - [ ] sliders
-  - [ ] homogenize dimensions (height width)
+  - [x] homogenize dimensions (height width)
 
 - [ ] presets
-  - [ ] save presets and save in local storage
+  - [x] save presets and save in local storage
+  - [x] pointer
 
 - [ ] Layout
   - [x] index slider is bugged
+  - [x] grid sliders 
+  - [x] homogenize colors
+  - [x] number box text is bold
+  - [ ] click to start audio context

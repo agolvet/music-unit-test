@@ -1,17 +1,21 @@
 import { LitElement, html, css } from 'lit';
 
+
+/*
+  Components to save and load presets from rnbo parameters values.
+
+  Presets are saved to LocalStorage and therefore saved between browser sessions.
+*/
+
 class Presets extends LitElement {
   constructor() {
     super();
 
     this.mode = "load";
     this.numberPresets = 10;
-    this.device = null
-    this.presets = {
-      "0": {
-        "ratio": 40,
-      },
-    };
+    this.device = null;
+    const savedPresets = JSON.parse(localStorage.getItem("myFmSynthPresets"));
+    this.presets = savedPresets ? savedPresets : {};
   }
 
   static properties = {
@@ -43,6 +47,23 @@ class Presets extends LitElement {
       width: 30px;
       margin-right: 2px;
       user-select: none;
+      cursor: pointer;
+    }
+
+    .mode-button {
+      border: 1px solid #404040;
+      background-color: #292929;
+      font-size: 11px;
+      height: 16px;
+      width: 30px;
+      text-align: center;
+      align-content: end;
+      user-select: none;
+      cursor: pointer;
+    }
+
+    #save-load > .mode-active {
+      background-color: #ED6447;
     }
 
     .active-preset {
@@ -56,25 +77,10 @@ class Presets extends LitElement {
     #save-load {
       display: flex;
       flex-direction: column;
-      height: 31px;
+      height: 32px;
       width: 30px;
       margin-right: 5px;
-    }
-
-    #save-load > div {
-      border: 1px solid #404040;
-      background-color: #292929;
-      font-size: 11px;
-      height: 15px;
-      width: 30px;
-      text-align: center;
-      align-content: center;
-      margin-bottom: 1px;
-      user-select: none;
-    }
-
-    #save-load > .mode-active {
-      background-color: #ED6447;
+      gap: 2px;
     }
   `
 
@@ -83,18 +89,18 @@ class Presets extends LitElement {
       <div id="preset-container">
         <div id="save-load">
           <div
-            class="${this.mode === "save" ? "mode-active" : ''}"
+            class="mode-button ${this.mode === "save" ? "mode-active" : ''}"
             @click="${e => this.mode = "save"}"
           >save</div>
           <div 
-            class="${this.mode === "load" ? "mode-active" : ''}"
+            class="mode-button ${this.mode === "load" ? "mode-active" : ''}"
             @click="${e => this.mode = "load"}"
           >load</div>
         </div>
         ${[...Array(this.numberPresets).keys()].map(i => {
           return html`
             <div 
-              class="preset-button"
+              class="preset-button ${Object.hasOwn(this.presets, i) ? "active-preset" : ''}"
               @click="${e => this.onClickPreset(i)}"
             >${i+1}</div>
           `
@@ -103,34 +109,28 @@ class Presets extends LitElement {
     `
   }
 
-  onClickPreset(i) {
-    
-    if (this.mode === "load") {
-      if (this.presets[i]) {
-        const event = new CustomEvent('input', {
-          bubbles: true,
-          composed: true,
-          detail: { value: this.presets[i] },
+  onClickPreset(i) { 
+    if (this.device) {
+      if (this.mode === "load") {
+        if (this.presets[i]) {
+          const preset = this.presets[i];
+          Object.keys(preset).forEach(paramId => {
+            const rnboParam = this.device.parameters.find(p => p.id === paramId);
+            rnboParam.value = preset[paramId];
+          });
+        }
+      } else { // save
+        const preset = {};
+        this.device.parameters.forEach(param => {
+          preset[param.id] = param.value;
         });
-  
-        this.dispatchEvent(event);
+        this.presets[i] = preset;
+        localStorage.setItem("myFmSynthPresets", JSON.stringify(this.presets));
       }
-    }
+    }  
+    this.requestUpdate(); 
   }
 
-  // savePreset(i) {
-  //   console.log('hello save')
-  // }
-
-  // loadPreset(i) {
-  //   const preset = this.presets[i];
-  //   if (preset) {
-  //     Object.keys(preset).forEach(paramId => {
-  //       const rnboParam = this.device.parameters.find(p => p.id === paramId);
-  //       rnboParam.value = preset[paramId];
-  //     });
-  //   }
-  // }
 }
 
 customElements.define('my-presets', Presets);

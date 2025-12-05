@@ -1,6 +1,10 @@
 import { LitElement, html, css } from 'lit';
 import "./NumberBox.js"
 
+/*
+  Simple slider with min/max bounds and a number box to set value with keyboard
+*/
+
 class Slider extends LitElement {
   constructor() {
     super();
@@ -35,7 +39,6 @@ class Slider extends LitElement {
       display: inline-block;
       position: relative;
       height: 30px;
-      width: 200px;
     }
 
     :host > div {
@@ -45,6 +48,7 @@ class Slider extends LitElement {
 
     .slider {
       height: 100%;
+      width: 200px;
       background-color: #292929;
       border: 1px solid #404040;
       margin-right: 5px;
@@ -115,7 +119,7 @@ class Slider extends LitElement {
           min="${this._min}"
           max="${this._max}"
           value="${this._value}"
-          @change="${e => this.value = e.detail.value}"
+          @change="${this._setValueFromNumberBox}"
         ><number-box>
       </div>
     `
@@ -133,10 +137,7 @@ class Slider extends LitElement {
     return val/this.width * 100;
   }
 
-  // _valueFromWidth(width) {
-
-  // }
-
+  
   _triggerInput() {
     const event = new CustomEvent('input', {
       bubbles: true,
@@ -155,6 +156,12 @@ class Slider extends LitElement {
     });
 
     this.dispatchEvent(event);
+  }
+  
+  _setValueFromNumberBox(e) {
+    this.value = e.detail.value;
+    this._triggerInput();
+    this._triggerChange();
   }
 
   _onMouseDown(e) {

@@ -1,5 +1,14 @@
 import { LitElement, html, css } from 'lit';
 
+
+/*
+  Number box to display values and set value from keyboard input.
+
+  Min and max ranges can be defined and integer values can be forced.
+  Value is set when losing focus (e.g. clicking outside of element) or pressing
+  enter.
+*/
+
 class NumberBox extends LitElement {
   constructor() {
     super();
@@ -10,9 +19,8 @@ class NumberBox extends LitElement {
     this._max = +Infinity;
     this.integer = false;
 
+    // reset displayed value when typing new value.
     this._newValue = false;
-    this._inDecimal = false;
-    this._mult = 0.1;
 
     this._onKeyDown = this._onKeyDown.bind(this);
   }
@@ -69,22 +77,24 @@ class NumberBox extends LitElement {
     :host {
       display: inline-block;
       position: relative;
-      background-color: #292929;
       height: 30px;
       width: 100px;
-    }
-      
-    :host > div {
-      padding: 0 5px;
-      display: flex;
-      align-items: center;
-      border: 1px solid black;
+      border: 1px solid #404040;
+      background-color: #292929;
     }
 
-    :host > div:focus {
+    :host(:focus) {
       border: 1px solid #ED6447;
     }
       
+    :host > div {
+      height: 100%;
+      padding: 0 5px;
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+    }
+
     .triangle {
       fill: white;
     }
@@ -97,6 +107,7 @@ class NumberBox extends LitElement {
       font-size: 14px;
       padding: 0 10px;
       user-select: none;
+      overflow: scroll;
     }
   `;
 
@@ -161,60 +172,34 @@ class NumberBox extends LitElement {
     this._newValue = true;
   }
 
+  // update value when focus is lost 
   _onBlur(e) {
     window.removeEventListener("keydown", this._onKeyDown);
-    // this._mult = 0.1;
-    // this._inDecimal = false;
     this._updateValueFromString(this._typedValue);
   }
 
   _onKeyDown(e) {
-    if (this._typedValue.length < 7) {
-      const isNumber = /^[0-9]$/i.test(e.key);
-      if (isNumber) {
-        if (this._newValue) {
-          this._typedValue = '';
-          this._newValue = false;
-        }
-        this._typedValue = this._typedValue + e.key;
-      } else if ((e.key === "." || e.key === ",") && !(this._typedValue.includes('.')) && !this.integer) {
-        this._typedValue = this._typedValue + ".";
-      } else if (e.key === "Backspace") {
-        if (this._typedValue.length === 1) {
-          this._typedValue = '0'
-        } else {
-          this._typedValue = this._typedValue.slice(0, -1);
-        }
+    const isNumber = /^[0-9]$/i.test(e.key);
+    if (isNumber) {
+      if (this._newValue) {
+        this._typedValue = '';
+        this._newValue = false;
       }
+      this._typedValue = this._typedValue + e.key;
+    } else if ((e.key === "." || e.key === ",") && !(this._typedValue.includes('.')) && !this.integer) {
+      this._typedValue = this._typedValue + ".";
+    } else if (e.key === "Backspace") {
+      if (this._typedValue.length === 1) {
+        this._typedValue = ''
+      } else {
+        this._typedValue = this._typedValue.slice(0, -1);
+      }
+    } else if (e.key === "Enter") {
+      this._updateValueFromString(this._typedValue);
     }
 
     this.requestUpdate();
   }
-
-  // _onKeyDown(e) {
-  //   if (this._typedValue.toString().length < 7) {
-  //     const isNumber = /^[0-9]$/i.test(e.key);
-  //     if (isNumber) {
-  //       if (this._newValue) {
-  //         this._typedValue = 0;
-  //         this._newValue = false;
-  //       }
-  //       const n = parseInt(e.key);
-  //       if (this._inDecimal) {
-  //         this._typedValue = this._typedValue + n * this._mult;
-  //         console.log(this._typedValue, n * this._mult);
-  //         this._mult /= 10;
-  //       } else {
-  //         this._typedValue = this._typedValue * 10 + n;
-  //       }
-  //     }
-  //     else if ((e.key === "." || e.key === ",") && !this._inDecimal && !this.integer) {
-  //       this._inDecimal = true;
-  //     }
-  //   }
-
-  //   this.requestUpdate();
-  // }
 }
 
 customElements.define('number-box', NumberBox);

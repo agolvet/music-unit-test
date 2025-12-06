@@ -50,19 +50,24 @@ class Layout extends LitElement {
     }
 
     midi-keyboard {
-      margin: 20px 0;
+      margin: 15px 0;
     }
 
     #audio-params {
       width: 600px;
       display: grid;
       grid-template-columns: 1fr 1fr;
-      grid-template-rows: 1fr;
     }
 
     #audio-params > p {
       font-weight: bold;
     }
+
+    #resume-context {
+      height: 100%;
+      width: 100%;
+      background-color: green;
+    } 
 
   `
   // rendering parameter sliders automatically from rnbo export.
@@ -85,6 +90,8 @@ class Layout extends LitElement {
 
   render() {
     return html`
+      <p>!! AudioContext in the browser can only be started after a user gesture. Click anywhere on the page before playing with the keyboard</p>
+      </div>
       <div class="text">presets</div>
       <my-presets
         .device="${this.device}"

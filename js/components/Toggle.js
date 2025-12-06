@@ -26,12 +26,12 @@ class Toggle extends LitElement {
     }
 
     .cross {
-      stroke: white;
+      stroke: #404040;
       stroke-width: 8px;
     }
 
     .active {
-      stroke: #ED6447;
+      stroke: white;
     }
   `
 

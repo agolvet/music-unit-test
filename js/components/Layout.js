@@ -21,7 +21,6 @@ class Layout extends LitElement {
     super();
 
     this._device = null;
-    this._paramSliders = {};
   }
 
   static properties = {

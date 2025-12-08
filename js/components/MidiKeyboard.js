@@ -3,11 +3,29 @@ import "./NumberBox.js"
 import "./Toggle.js"
 
 const whiteNotes = [0, 2, 4, 5, 7, 9, 11];
+const keyboardToNote = {
+  "q": 0,
+  "z": 1,
+  "s": 2,
+  "e": 3,
+  "d": 4,
+  "f": 5, 
+  "t": 6,
+  "g": 7,
+  "y": 8,
+  "h": 9,
+  "u": 10,
+  "j": 11, 
+  "k": 12, 
+}
 
 /*
   A minimalist monophonic MIDI keyboard.
   Number boxes can be used to change number of octave displayed, first octave 
   displayed and to (un)toggle fixed velocity.
+
+  Reacts to keyboard input (french layout) : second line for white keys 
+  and first line for black keys
 */
 
 class MidiKeyboard extends LitElement {
@@ -27,8 +45,14 @@ class MidiKeyboard extends LitElement {
     this.blackToWhiteKeyRatio = 0.66;
 
     // need these so that "this" refers to this element in these callback function
-    this.playNote = this.playNote.bind(this);
-    this.releaseNote = this.releaseNote.bind(this);
+    this._onMouseDown = this._onMouseDown.bind(this);
+    this._onMouseUp = this._onMouseUp.bind(this);
+    this._onKeyDown = this._onKeyDown.bind(this);
+    this._onKeyUp = this._onKeyUp.bind(this);
+
+    // react to keyboard input 
+    window.addEventListener('keydown', this._onKeyDown);
+    window.addEventListener('keyup', this._onKeyUp);
   }
 
   static properties = {
@@ -54,7 +78,7 @@ class MidiKeyboard extends LitElement {
       border: solid 1px black;
     }
 
-    .key:active {
+    .key.active {
       background-color: #ED6447;
     }
 
@@ -100,6 +124,7 @@ class MidiKeyboard extends LitElement {
       if (isWhite) {
         whiteKeys.push(html`
           <div
+            id="keyboard-key-${i}"
             class="key white"
             style="
               left: ${keyPosition * widthWhiteKey}px;
@@ -107,25 +132,26 @@ class MidiKeyboard extends LitElement {
               height: ${this._height}px;
             "
             .value=${i}
-            @mousedown="${this.playNote}"
-            @mouseup="${this.releaseNote}"
-            @mouseout="${this.releaseNote}"
+            @mousedown="${this._onMouseDown}"
+            @mouseup="${this._onMouseUp}"
+            @mouseout="${this._onMouseUp}"
           ></div>
         `)
       } else {
         //add 0.15 to position for centering black key
         blackKeys.push(html`
           <div
+            id="keyboard-key-${i}"
             class="key black"
             style="
-              left: ${(keyPosition + 0.15) * widthWhiteKey }px; 
+              left: ${(keyPosition + 0.15) * widthWhiteKey}px; 
               width: ${widthBlackKey}px;
               height: ${heightBlackKey}px;
             "
             .value=${i}
-            @mousedown="${this.playNote}"
-            @mouseup="${this.releaseNote}"
-            @mouseout="${this.releaseNote}"
+            @mousedown="${this._onMouseDown}"
+            @mouseup="${this._onMouseUp}"
+            @mouseout="${this._onMouseUp}"
           ></div>
         `)
       }
@@ -180,21 +206,9 @@ class MidiKeyboard extends LitElement {
     `
   }
 
-  playNote(e) {
-    // compute midi note number and velocity based on height of the click like in max/msp
-    const midiNote = 24 + (this.firstOctave - 1)*12 + e.target.value; 
-    const isWhiteKey = whiteNotes.includes(e.target.value % 12);
-    let velocity;
-    if (this.fixedVelocity) {
-      velocity = this.velocity;
-    } else {
-      if (isWhiteKey) {
-        velocity = 127 - 127 / (this._height + 2) * e.layerY;
-      } else {
-        velocity = 127 - 127 / (this.blackToWhiteKeyRatio*this._height + 2) * e.layerY;
-      }
-    }
-
+  // We only send midi information up to the layout which is in charge of
+  // actually communicating with rnbo
+  playNote(midiNote, velocity) {
     const event = new CustomEvent('input', {
       bubbles: true,
       composed: true,
@@ -208,10 +222,7 @@ class MidiKeyboard extends LitElement {
     this.dispatchEvent(event);
   }
 
-  releaseNote(e) {
-    const midiNote = 24 + (this.firstOctave - 1) * 12 + e.target.value;
-    const velocity = 0;
-
+  releaseNote(midiNote, velocity) {
     const event = new CustomEvent('input', {
       bubbles: true,
       composed: true,
@@ -225,6 +236,59 @@ class MidiKeyboard extends LitElement {
     });
 
     this.dispatchEvent(event);
+  }
+
+  _onMouseDown(e) {
+    // compute midi note number and velocity based on height of the click like in max/msp
+    const midiNote = 24 + (this.firstOctave - 1) * 12 + e.target.value;
+    const isWhiteKey = whiteNotes.includes(e.target.value % 12);
+    let velocity;
+    if (this.fixedVelocity) {
+      velocity = this.velocity;
+    } else {
+      if (isWhiteKey) {
+        velocity = 127 - 127 / (this._height + 2) * e.layerY;
+      } else {
+        velocity = 127 - 127 / (this.blackToWhiteKeyRatio * this._height + 2) * e.layerY;
+      }
+    }
+
+    //add active class to change color of active key
+    e.target.classList.add("active");
+    
+    this.playNote(midiNote, velocity);
+  }
+
+  _onMouseUp(e) {
+    const midiNote = 24 + (this.firstOctave - 1) * 12 + e.target.value;
+    const velocity = 0;
+
+    e.target.classList.remove("active");
+
+    this.releaseNote(midiNote, velocity);
+  }
+
+  _onKeyDown(e) {
+    if (e.repeat) {return}
+    if (Object.hasOwn(keyboardToNote, e.key)) {
+      const midiNote = 24 + (this.firstOctave - 1) * 12 + keyboardToNote[e.key];
+
+      const $keyRect = this.renderRoot.getElementById(`keyboard-key-${keyboardToNote[e.key]}`);
+      $keyRect.classList.add("active");
+
+      this.playNote(midiNote, 100);
+    }
+  }
+
+  _onKeyUp(e) {
+    if (Object.hasOwn(keyboardToNote, e.key)) {
+      const midiNote = 24 + (this.firstOctave - 1) * 12 + keyboardToNote[e.key];
+
+      const $keyRect = this.renderRoot.getElementById(`keyboard-key-${keyboardToNote[e.key]}`);
+      $keyRect.classList.remove("active");
+
+      this.releaseNote(midiNote, 0);
+    }
   }
 }
 

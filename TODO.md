@@ -1,4 +1,5 @@
 - [ ] clean code & comments
+- [ ] write README
 - [ ] tests
 
 - [ ] Keyboard

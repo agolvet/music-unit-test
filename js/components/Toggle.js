@@ -1,5 +1,9 @@
 import { LitElement, html, css } from 'lit';
 
+/*
+  A simple toggle on/off button
+*/
+
 class Toggle extends LitElement {
   constructor() {
     super();

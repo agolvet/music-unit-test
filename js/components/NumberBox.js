@@ -168,13 +168,13 @@ class NumberBox extends LitElement {
   }
 
   _onFocus(e) {
-    window.addEventListener("keydown", this._onKeyDown);
+    this.addEventListener("keydown", this._onKeyDown);
     this._newValue = true;
   }
 
   // update value when focus is lost 
   _onBlur(e) {
-    window.removeEventListener("keydown", this._onKeyDown);
+    this.removeEventListener("keydown", this._onKeyDown);
     this._updateValueFromString(this._typedValue);
   }
 

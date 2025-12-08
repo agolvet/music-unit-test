@@ -1,8 +1,7 @@
 import { LitElement, html, css } from 'lit';
 
-
 /*
-  Components to save and load presets from rnbo parameters values.
+  Component to save and load presets from rnbo parameters values.
 
   Presets are saved to LocalStorage and therefore saved between browser sessions.
 */
@@ -101,7 +100,7 @@ class Presets extends LitElement {
           return html`
             <div 
               class="preset-button ${Object.hasOwn(this.presets, i) ? "active-preset" : ''}"
-              @click="${e => this.onClickPreset(i)}"
+              @click="${e => this._onClickPreset(i)}"
             >${i+1}</div>
           `
         })}
@@ -109,7 +108,7 @@ class Presets extends LitElement {
     `
   }
 
-  onClickPreset(i) { 
+  _onClickPreset(i) { 
     if (this.device) {
       if (this.mode === "load") {
         if (this.presets[i]) {

@@ -154,7 +154,8 @@ class NumberBox extends LitElement {
 
   _updateValueFromString(value) {
     this._value = parseFloat(value);
-    this._value = Math.max(this._min, Math.min(this._max, value));
+    this.value = Math.max(this._min, Math.min(this._max, this._value));
+
 
     this.requestUpdate();
     
@@ -177,17 +178,19 @@ class NumberBox extends LitElement {
     this.removeEventListener("keydown", this._onKeyDown);
     this._updateValueFromString(this._typedValue);
   }
-
+  
   _onKeyDown(e) {
     const isNumber = /^[0-9]$/i.test(e.key);
+    if (this._newValue) {
+      this._typedValue = '';
+      this._newValue = false;
+    }
     if (isNumber) {
-      if (this._newValue) {
-        this._typedValue = '';
-        this._newValue = false;
-      }
       this._typedValue = this._typedValue + e.key;
     } else if ((e.key === "." || e.key === ",") && !(this._typedValue.includes('.')) && !this.integer) {
       this._typedValue = this._typedValue + ".";
+    } else if ((e.key === "-") && this._typedValue === "") {
+      this._typedValue = "-";
     } else if (e.key === "Backspace") {
       if (this._typedValue.length === 1) {
         this._typedValue = ''

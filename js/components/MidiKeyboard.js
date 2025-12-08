@@ -175,7 +175,7 @@ class MidiKeyboard extends LitElement {
           value="${this.nOctave}"
           min="0"
           max="8"
-          integer="true"
+          integer
           @change="${e => this.nOctave = e.detail.value}"
         ></number-box>
       </div>
@@ -185,7 +185,7 @@ class MidiKeyboard extends LitElement {
           value="${this.firstOctave}"
           min="0"
           max="8"
-          integer="true"
+          integer
           @change="${e => this.firstOctave = e.detail.value}"
         ></number-box>
       </div>
@@ -198,8 +198,8 @@ class MidiKeyboard extends LitElement {
         <number-box
           value="${this.velocity}"
           min="0"
-          max="8"
-          integer="true"
+          max="127"
+          integer
           @change="${e => this.velocity = e.detail.value}"
         ></number-box>
       </div>
@@ -276,7 +276,7 @@ class MidiKeyboard extends LitElement {
       const $keyRect = this.renderRoot.getElementById(`keyboard-key-${keyboardToNote[e.key]}`);
       $keyRect.classList.add("active");
 
-      this.playNote(midiNote, 100);
+      this.playNote(midiNote, this.velocity);
     }
   }
 

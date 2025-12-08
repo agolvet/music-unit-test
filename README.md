@@ -9,12 +9,18 @@ If have heard about `node` and `npm` before but would like to know more about th
 
 ## Installation and running
 1) Clone or download this repo to the directory of your choice.
-2) In terminal navigate to the root of this repository install dependencies with the following command: 
-```npm install```
+2) In terminal, navigate to the root of this repository and install dependencies with the following command: 
+```sh
+npm install
+```
 3) Build the app using the following command: 
-```npm run build```
+```sh
+npm run build
+```
 4) Start the app with 
-```npm run start```
+```sh
+npm run start
+```
 
 Once the server started up successfully you may see something like the following in the console:
 
